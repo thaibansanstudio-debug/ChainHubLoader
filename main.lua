@@ -1,57 +1,57 @@
--- CHAIN HUB FREE (STABLE)
+-- 🔥 CHAIN HUB PRO FULL
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("🔥 GUB FREE 🔥", "Ocean")
+local Window = Library.CreateLib("🔥 FREE  🔥", "DarkTheme")
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
-
-player.CharacterAdded:Connect(function(c)
-    char = c
-end)
+player.CharacterAdded:Connect(function(c) char = c end)
 
 ------------------------------------------------
--- SPEED
-local Main = Window:NewTab("Main")
-local SpeedSec = Main:NewSection("🏃 Speed")
+-- 💾 SAVE
 
-SpeedSec:NewButton("Speed 100", "", function()
-    char.Humanoid.WalkSpeed = 100
-end)
+local file = "chainhub.json"
+local function save(t)
+    if writefile then writefile(file, HttpService:JSONEncode(t)) end
+end
+local function load()
+    if isfile and isfile(file) then
+        return HttpService:JSONDecode(readfile(file))
+    end
+    return {}
+end
+local settings = load()
 
-SpeedSec:NewSlider("Custom Speed", "", 300, 0, function(v)
-    char.Humanoid.WalkSpeed = v
-end)
+settings.fly = settings.fly or false
+settings.god = settings.god or false
+settings.noclip = settings.noclip or false
+settings.esp = settings.esp or false
 
 ------------------------------------------------
--- FLY
-local FlyTab = Window:NewTab("Fly")
-local FlySec = FlyTab:NewSection("🕊 Fly")
+-- 🕊 FLY
 
-local flying = false
+local flying = settings.fly
 local flySpeed = 80
-local bv, bg, flyLoop
+local bv, bg
 
 local function startFly()
     local hrp = char.HumanoidRootPart
-
     bv = Instance.new("BodyVelocity", hrp)
     bv.MaxForce = Vector3.new(1e9,1e9,1e9)
-
     bg = Instance.new("BodyGyro", hrp)
     bg.MaxTorque = Vector3.new(1e9,1e9,1e9)
 
-    flyLoop = RunService.RenderStepped:Connect(function()
+    RunService.RenderStepped:Connect(function()
         if not flying then return end
         local cam = workspace.CurrentCamera
         bg.CFrame = cam.CFrame
-
         local move = Vector3.zero
+
         if UIS:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
         if UIS:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
         if UIS:IsKeyDown(Enum.KeyCode.A) then move -= cam.CFrame.RightVector end
@@ -64,27 +64,14 @@ local function startFly()
 end
 
 local function stopFly()
-    if flyLoop then flyLoop:Disconnect() end
     if bv then bv:Destroy() end
     if bg then bg:Destroy() end
 end
 
-FlySec:NewToggle("Enable Fly", "", function(v)
-    flying = v
-    if v then startFly() else stopFly() end
-end)
-
-FlySec:NewSlider("Fly Speed", "", 300, 10, function(v)
-    flySpeed = v
-end)
-
 ------------------------------------------------
--- NOCLIP
-local NoTab = Window:NewTab("Noclip")
-local NoSec = NoTab:NewSection("🚪 Noclip")
+-- 🚪 NOCLIP
 
-local noclip = false
-
+local noclip = settings.noclip
 RunService.Stepped:Connect(function()
     if noclip then
         for _,v in pairs(char:GetDescendants()) do
@@ -95,17 +82,10 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-NoSec:NewToggle("Enable Noclip", "", function(v)
-    noclip = v
-end)
-
 ------------------------------------------------
--- GOD MODE
-local GodTab = Window:NewTab("GodMode")
-local GodSec = GodTab:NewSection("🛡 Immortal")
+-- 🛡 GODMODE
 
-local god = false
-
+local god = settings.god
 RunService.Stepped:Connect(function()
     if god and char:FindFirstChild("Humanoid") then
         char.Humanoid.MaxHealth = math.huge
@@ -113,213 +93,135 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-GodSec:NewToggle("Enable GodMode", "", function(v)
-    god = v
-end)
-
 ------------------------------------------------
--- KILL AURA
-local KillTab = Window:NewTab("Kill Aura")
-local KillSec = KillTab:NewSection("💀 รอบตัวตาย")
+-- 👀 ESP PRO
 
-local killAura = false
-local killRange = 15
+local espEnabled = settings.esp
 
-RunService.Stepped:Connect(function()
-    if not killAura then return end
-
-    for _,plr in pairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (plr.Character.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
-            if dist <= killRange then
-                local h = plr.Character:FindFirstChild("Humanoid")
-                if h then h.Health = 0 end
-            end
-        end
-    end
-end)
-
-KillSec:NewToggle("Enable Kill Aura", "", function(v)
-    killAura = v
-end)
-
-KillSec:NewSlider("Kill Range", "", 100, 5, function(v)
-    killRange = v
-end)
-
-------------------------------------------------
--- ITEM MAGNET
-local MagnetTab = Window:NewTab("Magnet")
-local MagSec = MagnetTab:NewSection("🧲 ดูดของ")
-
-local magnet = false
-local magnetRange = 30
-
-RunService.Stepped:Connect(function()
-    if not magnet then return end
-
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    for _,item in pairs(Workspace:GetDescendants()) do
-        if item:IsA("BasePart") then
-            if (item.Position - hrp.Position).Magnitude <= magnetRange then
-                item.CFrame = hrp.CFrame
-            end
-        elseif item:IsA("Tool") then
-            item.Parent = player.Backpack
-        end
-    end
-end)
-
-MagSec:NewToggle("Enable Magnet", "", function(v)
-    magnet = v
-end)
-
-MagSec:NewSlider("Magnet Range", "", 150, 5, function(v)
-    magnetRange = v
-end)
-
-------------------------------------------------
--- INFO
-local Info = Window:NewTab("Info")
-Info:NewSection("📢 About"):NewLabel("🔥 CHAIN HUB FREE")
-Info:NewSection("⚙ UI"):NewKeybind("Toggle UI", "", Enum.KeyCode.F, function()
-    Library:ToggleUI()
-end)
-------------------------------------------------
--- ESP + NAME + TP (TOGGLE SYSTEM)
-local EspTPTab = Window:NewTab("ESP + TP")
-local E1 = EspTPTab:NewSection("👀 ESP + ชื่อ")
-
-local Players = game:GetService("Players")
-
-local espEnabled = false
-
-local function clearESP(char)
-    if char:FindFirstChild("CHAIN_ESP") then
-        char.CHAIN_ESP:Destroy()
-    end
-    local head = char:FindFirstChild("Head")
-    if head and head:FindFirstChild("NameESP") then
-        head.NameESP:Destroy()
+local function clearESP(c)
+    if c:FindFirstChild("CHAIN_ESP") then c.CHAIN_ESP:Destroy() end
+    if c:FindFirstChild("Head") and c.Head:FindFirstChild("ESP_INFO") then
+        c.Head.ESP_INFO:Destroy()
     end
 end
 
 local function applyESP(plr)
-    if plr == player then return end
-    if not espEnabled then return end
+    if plr == player or not espEnabled then return end
+    local c = plr.Character
+    if not c or c:FindFirstChild("CHAIN_ESP") then return end
 
-    local char = plr.Character
-    if not char then return end
-    if char:FindFirstChild("CHAIN_ESP") then return end
-
-    local h = Instance.new("Highlight")
+    local h = Instance.new("Highlight", c)
     h.Name = "CHAIN_ESP"
     h.FillTransparency = 0.3
-    h.OutlineTransparency = 0
-    h.Parent = char
 
-    local head = char:FindFirstChild("Head")
-    if head then
-        local bill = Instance.new("BillboardGui", head)
-        bill.Name = "NameESP"
-        bill.Size = UDim2.new(0,200,0,50)
-        bill.AlwaysOnTop = true
+    local head = c:FindFirstChild("Head")
+    if not head then return end
 
-        local txt = Instance.new("TextLabel", bill)
-        txt.Size = UDim2.new(1,0,1,0)
-        txt.BackgroundTransparency = 1
-        txt.Text = plr.Name
-        txt.TextColor3 = Color3.fromRGB(255,0,0)
-        txt.TextStrokeTransparency = 0
-        txt.TextScaled = true
-    end
-end
+    local gui = Instance.new("BillboardGui", head)
+    gui.Name = "ESP_INFO"
+    gui.Size = UDim2.new(0,220,0,60)
+    gui.AlwaysOnTop = true
 
--- Toggle ESP
-E1:NewToggle("Enable ESP + Name", "", function(v)
-    espEnabled = v
+    local txt = Instance.new("TextLabel", gui)
+    txt.Size = UDim2.new(1,0,1,0)
+    txt.BackgroundTransparency = 1
+    txt.TextColor3 = Color3.fromRGB(255,0,0)
+    txt.TextStrokeTransparency = 0
+    txt.TextScaled = true
 
-    for _,plr in pairs(Players:GetPlayers()) do
-        if plr.Character then
-            if v then
-                applyESP(plr)
-            else
-                clearESP(plr.Character)
-            end
-        end
-    end
-end)
-
-Players.PlayerAdded:Connect(function(plr)
-    plr.CharacterAdded:Connect(function()
-        if espEnabled then
-            task.wait(1)
-            applyESP(plr)
-        end
-    end)
-end)
-
-------------------------------------------------
--- TP BUTTONS
-local TPSection = EspTPTab:NewSection("📍 TP ไปหาผู้เล่น")
-
-local function addTP(plr)
-    if plr == player then return end
-
-    TPSection:NewButton("TP → "..plr.Name, "", function()
-        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame =
-                plr.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
-        end
+    RunService.RenderStepped:Connect(function()
+        if not espEnabled then gui.Enabled = false return end
+        if not c:FindFirstChild("HumanoidRootPart") then return end
+        local dist = math.floor(
+            (c.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
+        )
+        txt.Text = plr.Name.." | "..dist.."m"
+        gui.Enabled = true
     end)
 end
 
 for _,p in pairs(Players:GetPlayers()) do
-    addTP(p)
+    if p.Character then applyESP(p) end
+    p.CharacterAdded:Connect(function() task.wait(1) applyESP(p) end)
 end
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function() task.wait(1) applyESP(p) end)
+end)
 
-Players.PlayerAdded:Connect(addTP)
 ------------------------------------------------
--- DEAD RAILS ITEM SPAWNER
-local ItemTab = Window:NewTab("Spawn Items")
-local I1 = ItemTab:NewSection("🎁 เสกของ")
+-- 📍 TP MENU
 
-local RS = game:GetService("ReplicatedStorage")
-local WS = game:GetService("Workspace")
-
-local function spawnItem(itemName)
-    local item = RS:FindFirstChild(itemName, true)
-
-    if item then
-        local clone = item:Clone()
-        clone.Parent = player.Backpack
-        print("เสกแล้ว:", itemName)
-    else
-        warn("ไม่พบของ:", itemName)
+local function getNames()
+    local t = {}
+    for _,p in pairs(Players:GetPlayers()) do
+        if p ~= player then table.insert(t, p.Name) end
     end
+    return t
 end
 
--- ตัวอย่างของยอดนิยม (ปรับชื่อให้ตรงกับในเกม)
-I1:NewButton("🗡 Weapon", "", function()
-    spawnItem("Weapon")
-end)
-
-I1:NewButton("🔫 Gun", "", function()
-    spawnItem("Gun")
-end)
-
-I1:NewButton("💊 Medkit", "", function()
-    spawnItem("Medkit")
-end)
-
-I1:NewButton("📦 Supply", "", function()
-    spawnItem("Supply")
-end)
+local targetName
 
 ------------------------------------------------
--- กล่องใส่ชื่อของเอง
-I1:NewTextBox("พิมพ์ชื่อไอเท็ม", "เช่น Rifle, Ammo, Food", function(txt)
-    spawnItem(txt)
+-- UI
+
+local Main = Window:NewTab("Movement")
+local M = Main:NewSection("🕊 Fly / Noclip")
+
+M:NewToggle("Fly", "", function(v)
+    flying = v
+    settings.fly = v
+    save(settings)
+    if v then startFly() else stopFly() end
 end)
+
+M:NewToggle("Noclip", "", function(v)
+    noclip = v
+    settings.noclip = v
+    save(settings)
+end)
+
+local GodTab = Window:NewTab("God")
+GodTab:NewSection("🛡 Immortal"):NewToggle("GodMode", "", function(v)
+    god = v
+    settings.god = v
+    save(settings)
+end)
+
+local EspTab = Window:NewTab("ESP")
+EspTab:NewSection("👀 ESP PRO"):NewToggle("Enable ESP", "", function(v)
+    espEnabled = v
+    settings.esp = v
+    save(settings)
+
+    for _,p in pairs(Players:GetPlayers()) do
+        if p.Character then
+            if v then applyESP(p) else clearESP(p.Character) end
+        end
+    end
+end)
+
+local TPTab = Window:NewTab("Teleport")
+local TP = TPTab:NewSection("📍 TP Player")
+
+local dropdown = TP:NewDropdown("Select Player", "", getNames(), function(v)
+    targetName = v
+end)
+
+TP:NewButton("Refresh", "", function()
+    dropdown:Refresh(getNames())
+end)
+
+TP:NewButton("TP NOW", "", function()
+    local t = Players:FindFirstChild(targetName)
+    if t and t.Character and t.Character:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame =
+            t.Character.HumanoidRootPart.CFrame + Vector3.new(0,3,0)
+    end
+end)
+
+local Settings = Window:NewTab("Settings")
+Settings:NewSection("⚙ UI"):NewKeybind("Toggle UI", "", Enum.KeyCode.F, function()
+    Library:ToggleUI()
+end)
+
+print("🔥 CHAIN HUB PRO FULL LOADED 🔥")
